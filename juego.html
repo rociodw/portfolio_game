@@ -22,6 +22,8 @@
     html, body {
       margin: 0;
       height: 100%;
+      overflow: hidden;
+      overscroll-behavior: none;
       background: var(--ink);
       color: var(--cream);
       font-family: "Press Start 2P", monospace;
@@ -1027,14 +1029,14 @@
     });
 
     window.addEventListener("keydown", (event) => {
+      const held = event.code === "Space" || event.code === "ArrowUp" || event.code === "ArrowDown";
+      if (held) event.preventDefault();
       if (event.repeat) return;
       if (event.code === "Space" || event.code === "ArrowUp") {
-        event.preventDefault();
         if (state.mode === "paused") resume();
         else jump();
       }
       if (event.code === "ArrowDown") {
-        event.preventDefault();
         if (state.mode === "ready" || state.mode === "hold") engage();
         state.wantDuck = true;
       }
