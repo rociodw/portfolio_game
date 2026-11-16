@@ -109,6 +109,51 @@
       object-fit: contain;
     }
 
+    .progress-ring {
+      position: relative;
+      flex: none;
+      align-self: center;
+      display: grid;
+      place-items: center;
+      width: 54px;
+      height: 54px;
+      background: none;
+      border: 0;
+      padding: 0;
+    }
+
+    .progress-ring svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .progress-ring circle {
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .progress-ring .ring-track { stroke: var(--line); }
+
+    .progress-ring .ring-value {
+      stroke: var(--cream);
+      stroke-linecap: butt;
+      stroke-dasharray: 138.23;
+      stroke-dashoffset: 138.23;
+      transform: rotate(-90deg);
+      transform-origin: center;
+    }
+
+    .progress-ring .pct {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
     .counter .n { font-size: 16px; font-weight: 700; line-height: 1.2; }
     .counter .l {
       color: var(--dim);
@@ -232,6 +277,10 @@
       height: 100%;
       display: block;
     }
+
+    #mute .icon-on { display: none; }
+    #mute.is-on .icon-off { display: none; }
+    #mute.is-on .icon-on { display: block; }
 
     #overlay {
       position: fixed;
@@ -476,12 +525,60 @@
       .counter img { width: 26px; height: 26px; }
       .counter .l { display: none; }
       .counter .n { font-size: 14px; }
+      .progress-ring { width: 38px; height: 38px; }
+      .progress-ring .pct { font-size: 9px; }
       .toast img { width: 40px; height: 40px; }
       .toast .name { font-size: 13px; }
       .hud { min-height: 72px; padding: 0 8px 0 10px; }
       :root { --hud: 72px; }
       .card { padding: 12px; }
       .card h2 { font-size: 22px; }
+    }
+
+    @media (max-width: 560px) {
+      .counters {
+        flex: 1 1 100%;
+        width: 100%;
+        margin-left: 0;
+        justify-content: stretch;
+      }
+      .counter {
+        justify-content: center;
+        flex: 1 1 0;
+      }
+      .hud {
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: center;
+        gap: 8px;
+        min-height: 0;
+        padding: 8px 10px;
+      }
+      .toast {
+        width: 100%;
+        flex: none;
+        justify-content: flex-start;
+        min-height: 40px;
+      }
+      .hud-actions {
+        width: 100%;
+        justify-content: stretch;
+        align-items: stretch;
+      }
+      .hud-actions .btn {
+        flex: 1 1 0;
+        min-width: 0;
+        height: 49px;
+        padding: 8px 14px;
+      }
+      .hud-actions .icon-btn {
+        flex: none;
+        width: 49px;
+        height: 49px;
+        align-self: center;
+        padding: 8px;
+      }
+      :root { --hud: 115px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -516,6 +613,13 @@
             <span class="n" id="n-tech">00</span>
             <span class="l">Tecnologías</span>
           </div>
+          <div class="progress-ring" id="progress-ring" role="img" aria-label="0% de los objetos, 0 recogidos">
+            <svg viewBox="0 0 48 48" aria-hidden="true">
+              <circle class="ring-track" cx="24" cy="24" r="22"></circle>
+              <circle class="ring-value" id="progress-arc" cx="24" cy="24" r="22"></circle>
+            </svg>
+            <span class="pct" id="progress-pct">0%</span>
+          </div>
         </div>
     </header>
     <div id="world"></div>
@@ -528,7 +632,13 @@
         <button class="btn ghost icon-btn" id="mute" type="button" aria-label="Activar sonido" title="Activar sonido">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
             <path d="M4 10h3l4-3v10l-4-3H4z"></path>
-            <path d="M16 9l5 6M21 9l-5 6"></path>
+            <g class="icon-off">
+              <path d="M16 9l5 6M21 9l-5 6"></path>
+            </g>
+            <g class="icon-on">
+              <path d="M16 9.5a3.5 3.5 0 0 1 0 5"></path>
+              <path d="M18.2 7.2a6.5 6.5 0 0 1 0 9.6"></path>
+            </g>
           </svg>
         </button>
         <button class="btn" id="pause" type="button">Pausa</button>
@@ -617,7 +727,7 @@
 
     const STAGES = [
       {
-        name: "Publicidad y Turismo",
+        name: "1/8 Publicidad y Turismo",
         bg: "assets/escenarios/1_publicidad_turismo.png",
         ground: 0.247,
         min: 16,
@@ -632,7 +742,7 @@
         ]
       },
       {
-        name: "Recepción de hotel",
+        name: "2/8 Recepción de hotel",
         bg: "assets/escenarios/2_hotel.png",
         ground: 0.249,
         min: 10,
@@ -641,7 +751,7 @@
         items: [item("skill", "Orientación al cliente")]
       },
       {
-        name: "FREAAE",
+        name: "3/8 FREAAE",
         bg: "assets/escenarios/3_freaae.png",
         ground: 0.227,
         min: 12,
@@ -653,7 +763,7 @@
         ]
       },
       {
-        name: "Oficina turística",
+        name: "4/8 Oficina turística",
         bg: "assets/escenarios/4_oficina_turistica.png",
         ground: 0.238,
         min: 14,
@@ -669,7 +779,7 @@
         ]
       },
       {
-        name: "Máster full stack",
+        name: "5/8 Máster full stack",
         bg: "assets/escenarios/5_cei.png",
         ground: 0.224,
         min: 20,
@@ -688,7 +798,7 @@
         ]
       },
       {
-        name: "Cine",
+        name: "6/8Cine",
         bg: "assets/escenarios/6_cine.png",
         ground: 0.227,
         min: 8,
@@ -697,7 +807,7 @@
         items: [item("skill", "Agilidad y gestión del estrés")]
       },
       {
-        name: "Diseño UX",
+        name: "7/8 Diseño UX",
         bg: "assets/escenarios/7_google_ux.png",
         ground: 0.211,
         min: 18,
@@ -716,7 +826,7 @@
         ]
       },
       {
-        name: "Diseñadora web",
+        name: "8/8 Diseñadora web",
         bg: "assets/escenarios/8_labs.png",
         ground: 0.211,
         min: 22,
@@ -1013,10 +1123,21 @@
       name.textContent = entry.name;
     }
 
+    const TOTAL_ITEMS = STAGES.reduce((sum, stage) => sum + stage.items.length, 0);
+    const RING_R = 22;
+    const RING_CIRC = 2 * Math.PI * RING_R;
+
     function updateCounters() {
       document.getElementById("n-knowledge").textContent = pad(state.counts.knowledge);
       document.getElementById("n-skill").textContent = pad(state.counts.skill);
       document.getElementById("n-tech").textContent = pad(state.counts.tech);
+      const got = state.counts.knowledge + state.counts.skill + state.counts.tech;
+      const pct = TOTAL_ITEMS ? Math.round((got / TOTAL_ITEMS) * 100) : 0;
+      document.getElementById("progress-pct").textContent = `${pct}%`;
+      const arc = document.getElementById("progress-arc");
+      arc.style.strokeDasharray = String(RING_CIRC);
+      arc.style.strokeDashoffset = String(RING_CIRC * (1 - pct / 100));
+      document.getElementById("progress-ring").setAttribute("aria-label", `${pct}% de los objetos, ${got} de ${TOTAL_ITEMS}`);
     }
 
     function setStageName(stage) {
@@ -1376,6 +1497,7 @@
     document.getElementById("mute").addEventListener("click", () => {
       state.audio = !state.audio;
       const button = document.getElementById("mute");
+      button.classList.toggle("is-on", state.audio);
       button.setAttribute("aria-label", state.audio ? "Silenciar" : "Activar sonido");
       button.title = state.audio ? "Silenciar" : "Activar sonido";
       if (state.audio) beep(660, 0.05);
